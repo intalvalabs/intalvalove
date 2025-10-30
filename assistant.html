@@ -2,14 +2,55 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Dreamlove Assistant</title>
+    <title>Asistente Virtual Dreamlove</title>
+
+    <!-- Optional: simple Dreamlove styling -->
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #ffe6f0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      header {
+        text-align: center;
+        padding: 10px;
+      }
+      header img {
+        height: 60px;
+        margin-bottom: 10px;
+      }
+      h1 {
+        color: #e91e63;
+        font-size: 1.2rem;
+      }
+    </style>
   </head>
+
   <body>
+    <header>
+      <img
+        src="https://lh3.googleusercontent.com/sitesv/AAzXCkcTK0dJynZzpP-XP8txnxlS40ADBepoTqc-OtPD5V4yuzVkq8SQpXM1TGQ8lyb93OTqNM3llilL5B0FJCKUuUfwO4nTKZtZ3hokbS4nHkWpzvFeD5I9hcj37koI_xZ-VaFjWJLS9EE4QzHkkXD1CXUsuN6r1rpFp8-H2cgdpnduC4L91QBscbPyBKM=w16383"
+        alt="Dreamlove Logo"
+      />
+      <h1>Asistente Virtual de Dreamlove</h1>
+    </header>
+
     <!-- ElevenLabs widget -->
     <elevenlabs-convai
-      agent-id="agent_aeb8c0808bd56e6722ef1ee9e6"
-      api-key="public_key_313f2f3bfcd090ea2247d">
+      agent-id="agent_7801k8rfb6mcf8gaqtmsftv5vahx">
     </elevenlabs-convai>
+
+    <!-- ElevenLabs embed loader -->
+    <script
+      src="https://unpkg.com/@elevenlabs/convai-widget-embed"
+      async
+      type="text/javascript">
+    </script>
 
     <!-- JS listener for redirect tool -->
     <script>
@@ -28,3 +69,4 @@
     </script>
   </body>
 </html>
+
