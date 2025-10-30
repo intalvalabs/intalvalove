@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dreamlove Assistant</title>
+  </head>
+  <body>
+    <!-- ElevenLabs widget -->
+    <elevenlabs-convai
+      agent-id="agent_aeb8c0808bd56e6722ef1ee9e6"
+      api-key="public_key_313f2f3bfcd090ea2247d">
+    </elevenlabs-convai>
+
+    <!-- JS listener for redirect tool -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const widget = document.querySelector('elevenlabs-convai');
+        if (widget) {
+          widget.addEventListener('elevenlabs-convai:call', (event) => {
+            event.detail.config.clientTools = {
+              redirectToExternalURLREG: ({ URL }) => {
+                window.open(URL, '_blank', 'noopener,noreferrer');
+              },
+            };
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
