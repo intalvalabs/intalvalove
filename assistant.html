@@ -3,8 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <title>Asistente Virtual Dreamlove</title>
-
-    <!-- Optional: simple Dreamlove styling -->
     <style>
       body {
         margin: 0;
@@ -40,27 +38,23 @@
       <h1>Asistente Virtual de Dreamlove</h1>
     </header>
 
-    <!-- ElevenLabs widget -->
-    <elevenlabs-convai
-      agent-id="agent_7801k8rfb6mcf8gaqtmsftv5vahx">
-    </elevenlabs-convai>
-
-    <!-- ElevenLabs embed loader -->
+    <!-- ElevenLabs Chat Widget -->
+    <elevenlabs-convai agent-id="agent_7801k8rfb6mcf8gaqtmsftv5vahx"></elevenlabs-convai>
     <script
       src="https://unpkg.com/@elevenlabs/convai-widget-embed"
       async
-      type="text/javascript">
-    </script>
+      type="text/javascript"
+    ></script>
 
-    <!-- JS listener for redirect tool -->
+    <!-- Redirect tool -->
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const widget = document.querySelector('elevenlabs-convai');
+      document.addEventListener("DOMContentLoaded", () => {
+        const widget = document.querySelector("elevenlabs-convai");
         if (widget) {
-          widget.addEventListener('elevenlabs-convai:call', (event) => {
+          widget.addEventListener("elevenlabs-convai:call", (event) => {
             event.detail.config.clientTools = {
               redirectToExternalURLREG: ({ URL }) => {
-                window.open(URL, '_blank', 'noopener,noreferrer');
+                window.open(URL, "_blank", "noopener,noreferrer");
               },
             };
           });
@@ -69,4 +63,3 @@
     </script>
   </body>
 </html>
-
