@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel de Control · Supabase Dreamlove</title>
+    <style>
+      :root {
+        --bg: #f6f8fb;
+        --card: #ffffff;
+        --border: #e5e8ee;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --accent: #e91e63;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+
+        --lvl-0: #ffffff;
+        --lvl-1: #c8f0c8;
+        --lvl-2: #e2f5c4;
+        --lvl-3: #ffe19a;
+        --lvl-4: #ff9b8a;
+        --lvl-5: #d63838;
+        --lvl-unevaluated: #eef0f3;
+
+        --lvl-1-text: #14532d;
+        --lvl-2-text: #3f6212;
+        --lvl-3-text: #92400e;
+        --lvl-4-text: #7f1d1d;
+        --lvl-5-text: #ffffff;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      header.top {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 22px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+      }
+      header.top h1 {
+        margin: 0;
+        font-size: 18px;
+        color: var(--accent);
+      }
+      header.top .spacer { flex: 1; }
+      header.top input {
+        font: inherit;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        min-width: 240px;
+      }
+      header.top button {
+        font: inherit;
+        padding: 6px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: #fafbfd;
+        cursor: pointer;
+      }
+      header.top button:hover { background: #eef0f3; }
+      header.top button.primary {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+      header.top .status {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      nav.tabs {
+        display: flex;
+        gap: 4px;
+        padding: 0 22px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+      }
+      nav.tabs button {
+        font: inherit;
+        background: none;
+        border: none;
+        padding: 12px 16px;
+        cursor: pointer;
+        color: var(--muted);
+        border-bottom: 2px solid transparent;
+      }
+      nav.tabs button.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        font-weight: 600;
+      }
+
+      main { padding: 22px; }
+
+      .summary-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+      .chip .dot {
+        width: 8px; height: 8px; border-radius: 999px; display: inline-block;
+      }
+      .chip[data-level="0"] { background: var(--lvl-0); }
+      .chip[data-level="1"] .dot { background: #4ade80; }
+      .chip[data-level="2"] .dot { background: #a3e635; }
+      .chip[data-level="3"] .dot { background: #f59e0b; }
+      .chip[data-level="4"] .dot { background: #ef4444; }
+      .chip[data-level="5"] .dot { background: #b91c1c; }
+      .chip[data-level="unevaluated"] .dot { background: #94a3b8; }
+
+      .group-section { margin-bottom: 28px; }
+      .group-section h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 10px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 14px;
+        box-shadow: var(--shadow);
+      }
+      .card .title {
+        font-weight: 600;
+        font-size: 13px;
+        word-break: break-all;
+      }
+      .card .meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .card .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 8px;
+      }
+      .card .big {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .card .lbl {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+      .card[data-level="0"] { background: var(--lvl-0); }
+      .card[data-level="1"] { background: var(--lvl-1); color: var(--lvl-1-text); }
+      .card[data-level="2"] { background: var(--lvl-2); color: var(--lvl-2-text); }
+      .card[data-level="3"] { background: var(--lvl-3); color: var(--lvl-3-text); }
+      .card[data-level="4"] { background: var(--lvl-4); color: var(--lvl-4-text); }
+      .card[data-level="5"] { background: var(--lvl-5); color: var(--lvl-5-text); }
+      .card[data-level="unevaluated"] { background: var(--lvl-unevaluated); }
+      .card[data-level="1"] .meta,
+      .card[data-level="2"] .meta,
+      .card[data-level="3"] .meta,
+      .card[data-level="4"] .meta { color: inherit; opacity: 0.8; }
+      .card[data-level="5"] .meta { color: #fde2e2; }
+      .card[data-level="5"] .lbl { color: #fde2e2; }
+
+      table.data {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 13px;
+      }
+      table.data th, table.data td {
+        text-align: left;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      table.data th {
+        background: #fafbfd;
+        font-weight: 600;
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        user-select: none;
+      }
+      table.data tr:last-child td { border-bottom: none; }
+      table.data tr[data-level="1"] td:first-child { border-left: 3px solid #4ade80; }
+      table.data tr[data-level="2"] td:first-child { border-left: 3px solid #a3e635; }
+      table.data tr[data-level="3"] td:first-child { border-left: 3px solid #f59e0b; }
+      table.data tr[data-level="4"] td:first-child { border-left: 3px solid #ef4444; }
+      table.data tr[data-level="5"] td:first-child { border-left: 3px solid #b91c1c; }
+
+      .num { font-variant-numeric: tabular-nums; text-align: right; }
+      .err { color: #b91c1c; }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #eef0f3;
+      }
+      .pill.success { background: #dcfce7; color: #14532d; }
+      .pill.failed,
+      .pill.failure { background: #fee2e2; color: #7f1d1d; }
+      .pill.starting { background: #fef9c3; color: #854d0e; }
+
+      .empty {
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .controls label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+        background: #fff;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+      }
+      .controls label select,
+      .controls label input {
+        font: inherit;
+        border: none;
+        background: transparent;
+        outline: none;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #1f2937;
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.2s, transform 0.2s;
+        pointer-events: none;
+        z-index: 100;
+      }
+      .toast.show { opacity: 1; transform: translateY(0); }
+      .toast.error { background: #b91c1c; }
+    </style>
+  </head>
+
+  <body>
+    <header class="top">
+      <h1>Panel de Control · Supabase</h1>
+      <span class="status" id="status">listo</span>
+      <span class="spacer"></span>
+      <input id="token" type="password" placeholder="X-Panel-Token" autocomplete="off" />
+      <button id="save-token">Guardar token</button>
+      <button id="refresh" class="primary">Actualizar</button>
+    </header>
+
+    <nav class="tabs">
+      <button data-tab="health" class="active">Salud sincronizaciones</button>
+      <button data-tab="tables">Tablas</button>
+      <button data-tab="logs">Logs / errores</button>
+    </nav>
+
+    <main>
+      <section id="tab-health">
+        <div class="summary-bar" id="health-summary"></div>
+        <div id="health-content"></div>
+      </section>
+
+      <section id="tab-tables" hidden>
+        <div class="controls">
+          <label>Buscar
+            <input id="tables-filter" type="search" placeholder="nombre de tabla" />
+          </label>
+          <label>Mostrar
+            <select id="tables-mode">
+              <option value="all">todas</option>
+              <option value="tracked">solo con timestamp</option>
+              <option value="stale">solo desactualizadas (&gt;3d)</option>
+            </select>
+          </label>
+        </div>
+        <div class="summary-bar" id="tables-summary"></div>
+        <div id="tables-content"></div>
+      </section>
+
+      <section id="tab-logs" hidden>
+        <div class="controls">
+          <label>Ventana
+            <select id="logs-hours">
+              <option value="24">24h</option>
+              <option value="72" selected>72h</option>
+              <option value="168">7d</option>
+              <option value="720">30d</option>
+            </select>
+          </label>
+          <label>Mostrar
+            <select id="logs-only">
+              <option value="failures" selected>solo errores</option>
+              <option value="all">todas las ejecuciones</option>
+            </select>
+          </label>
+          <label>Límite
+            <select id="logs-limit">
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </label>
+        </div>
+        <div class="summary-bar" id="logs-summary"></div>
+        <div id="logs-content"></div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const ENDPOINT = "https://akuxqmlclvtnuetwcwbo.supabase.co/functions/v1/panel-health";
+      const GROUPS = ["tracking", "dreamlove_sync", "pulse", "orbit"];
+      const TOKEN_KEY = "panel-health-token";
+
+      const $ = (sel) => document.querySelector(sel);
+      const tokenInput = $("#token");
+      const statusEl = $("#status");
+      const toastEl = $("#toast");
+
+      tokenInput.value = localStorage.getItem(TOKEN_KEY) || "";
+
+      function setStatus(text) { statusEl.textContent = text; }
+      function toast(msg, isError = false) {
+        toastEl.textContent = msg;
+        toastEl.classList.toggle("error", isError);
+        toastEl.classList.add("show");
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => toastEl.classList.remove("show"), 3000);
+      }
+
+      function relativeTime(iso) {
+        if (!iso) return "—";
+        const ms = new Date(iso).getTime();
+        if (!Number.isFinite(ms)) return "—";
+        const diff = (Date.now() - ms) / 1000;
+        if (diff < 60) return Math.round(diff) + "s";
+        if (diff < 3600) return Math.round(diff / 60) + "m";
+        if (diff < 86400) return Math.round(diff / 3600) + "h";
+        return Math.round(diff / 86400) + "d";
+      }
+
+      function fmtNumber(n) {
+        if (n === null || n === undefined) return "—";
+        return Number(n).toLocaleString("es-ES");
+      }
+
+      function fmtTs(iso) {
+        if (!iso) return "—";
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return iso;
+        return d.toLocaleString("es-ES", {
+          year: "2-digit", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit",
+        });
+      }
+
+      async function call(params) {
+        const token = tokenInput.value.trim();
+        if (!token) {
+          throw new Error("Falta el X-Panel-Token");
+        }
+        const url = new URL(ENDPOINT);
+        for (const [k, v] of Object.entries(params || {})) {
+          if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+        }
+        const res = await fetch(url, { headers: { "X-Panel-Token": token } });
+        const text = await res.text();
+        let body;
+        try { body = JSON.parse(text); } catch { body = { error: "invalid_json", raw: text }; }
+        if (!res.ok) {
+          const err = new Error(body?.error || `HTTP ${res.status}`);
+          err.body = body;
+          throw err;
+        }
+        return body;
+      }
+
+      // ---------- Tabs ----------
+      const tabs = document.querySelectorAll("nav.tabs button");
+      tabs.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          tabs.forEach((b) => b.classList.toggle("active", b === btn));
+          for (const id of ["health", "tables", "logs"]) {
+            $("#tab-" + id).hidden = id !== btn.dataset.tab;
+          }
+          loadCurrentTab();
+        });
+      });
+
+      function currentTab() {
+        return document.querySelector("nav.tabs button.active").dataset.tab;
+      }
+
+      async function loadCurrentTab() {
+        const tab = currentTab();
+        try {
+          if (tab === "health") await loadHealth();
+          else if (tab === "tables") await loadTables();
+          else if (tab === "logs") await loadLogs();
+        } catch (err) {
+          setStatus("error");
+          toast(err.message, true);
+        }
+      }
+
+      // ---------- Health ----------
+      async function loadHealth() {
+        setStatus("cargando salud…");
+        const results = await Promise.all(
+          GROUPS.map((g) => call({ endpoint: "health", group: g }).catch((e) => ({ error: e.message, group: g })))
+        );
+
+        const summaryTotals = { fresh: 0, ok: 0, aging: 0, stale: 0, critical: 0, dead: 0, unevaluated: 0 };
+        for (const r of results) {
+          if (r?.summary) {
+            for (const k of Object.keys(summaryTotals)) summaryTotals[k] += r.summary[k] || 0;
+          }
+        }
+
+        const summaryHTML = [
+          chip("0", "fresh", summaryTotals.fresh),
+          chip("1", "ok", summaryTotals.ok),
+          chip("2", "aging", summaryTotals.aging),
+          chip("3", "stale", summaryTotals.stale),
+          chip("4", "critical", summaryTotals.critical),
+          chip("5", "dead", summaryTotals.dead),
+          chip("unevaluated", "no evaluado", summaryTotals.unevaluated),
+        ].join("");
+        $("#health-summary").innerHTML = summaryHTML;
+
+        const sections = results.map((r) => {
+          if (r.error) {
+            return `<section class="group-section"><h2>${escapeHtml(r.group)}</h2>
+                    <div class="empty err">${escapeHtml(r.error)}</div></section>`;
+          }
+          const cards = (r.services || []).map(serviceCard).join("");
+          return `<section class="group-section">
+                    <h2>${escapeHtml(r.group)}</h2>
+                    <div class="grid">${cards}</div>
+                  </section>`;
+        }).join("");
+        $("#health-content").innerHTML = sections;
+
+        setStatus("actualizado " + new Date().toLocaleTimeString("es-ES"));
+      }
+
+      function chip(level, label, count) {
+        return `<span class="chip" data-level="${level}"><span class="dot"></span>${escapeHtml(label)} · ${count}</span>`;
+      }
+
+      function serviceCard(s) {
+        const lvl = s.status === "unevaluated" ? "unevaluated" : String(s.level);
+        const days = s.days_since === null ? "—" : s.days_since + "d";
+        return `
+          <div class="card" data-level="${lvl}">
+            <div class="title">${escapeHtml(s.name)}</div>
+            <div class="meta">${escapeHtml(s.status)}${s.cron ? " · cron " + escapeHtml(s.cron) : ""}</div>
+            <div class="row">
+              <div>
+                <div class="lbl">último dato</div>
+                <div>${escapeHtml(fmtTs(s.last_data_at))}</div>
+              </div>
+              <div style="text-align:right">
+                <div class="lbl">edad</div>
+                <div class="big">${escapeHtml(days)}</div>
+              </div>
+            </div>
+            ${s.last_cron_run ? `<div class="meta">última ejecución cron: ${escapeHtml(fmtTs(s.last_cron_run))}</div>` : ""}
+            ${s.note ? `<div class="meta err">${escapeHtml(s.note)}</div>` : ""}
+          </div>
+        `;
+      }
+
+      // ---------- Tables ----------
+      let tablesCache = null;
+
+      async function loadTables() {
+        setStatus("cargando tablas…");
+        tablesCache = await call({ endpoint: "tables" });
+        renderTables();
+        setStatus("actualizado " + new Date().toLocaleTimeString("es-ES"));
+      }
+
+      function renderTables() {
+        if (!tablesCache) return;
+        const filter = $("#tables-filter").value.trim().toLowerCase();
+        const mode = $("#tables-mode").value;
+
+        let rows = tablesCache.tables.slice();
+        if (filter) rows = rows.filter((t) => t.table_name.toLowerCase().includes(filter));
+        if (mode === "tracked") rows = rows.filter((t) => t.ts_column);
+        if (mode === "stale") rows = rows.filter((t) => t.ts_column && t.days_since !== null && t.days_since >= 3);
+
+        const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, unevaluated: 0 };
+        for (const t of rows) {
+          const k = t.status === "unevaluated" ? "unevaluated" : t.level;
+          counts[k] = (counts[k] || 0) + 1;
+        }
+        $("#tables-summary").innerHTML = [
+          `<span class="chip"><strong>${rows.length}</strong>&nbsp;tablas · ${fmtNumber(rows.reduce((a, t) => a + t.approx_row_count, 0))} filas</span>`,
+          chip("0", "frescas", counts[0]),
+          chip("1", "ok", counts[1]),
+          chip("2", "envejeciendo", counts[2]),
+          chip("3", "obsoletas", counts[3]),
+          chip("4", "críticas", counts[4]),
+          chip("5", "muertas", counts[5]),
+          chip("unevaluated", "sin timestamp", counts.unevaluated),
+        ].join("");
+
+        if (!rows.length) {
+          $("#tables-content").innerHTML = `<div class="empty">Sin resultados.</div>`;
+          return;
+        }
+
+        const body = rows.map((t) => {
+          const lvl = t.status === "unevaluated" ? "" : String(t.level);
+          const days = t.days_since === null ? "—" : t.days_since + "d";
+          return `<tr data-level="${lvl}">
+            <td>${escapeHtml(t.table_name)}</td>
+            <td class="num">${fmtNumber(t.approx_row_count)}</td>
+            <td>${escapeHtml(t.ts_column || "—")}</td>
+            <td>${escapeHtml(fmtTs(t.last_data_at))}</td>
+            <td class="num">${escapeHtml(days)}</td>
+            <td>${escapeHtml(fmtTs(t.last_autovacuum))}</td>
+            <td>${escapeHtml(fmtTs(t.last_autoanalyze))}</td>
+          </tr>`;
+        }).join("");
+
+        $("#tables-content").innerHTML = `
+          <table class="data">
+            <thead><tr>
+              <th>Tabla</th>
+              <th class="num">Filas (aprox.)</th>
+              <th>Col. timestamp</th>
+              <th>Último dato</th>
+              <th class="num">Edad</th>
+              <th>Último autovacuum</th>
+              <th>Último autoanalyze</th>
+            </tr></thead>
+            <tbody>${body}</tbody>
+          </table>
+        `;
+      }
+
+      $("#tables-filter").addEventListener("input", renderTables);
+      $("#tables-mode").addEventListener("change", renderTables);
+
+      // ---------- Logs ----------
+      async function loadLogs() {
+        setStatus("cargando logs…");
+        const hours = $("#logs-hours").value;
+        const only = $("#logs-only").value;
+        const limit = $("#logs-limit").value;
+        const data = await call({ endpoint: "logs", hours, only, limit });
+
+        const successCount = data.events.filter((e) => e.status === "succeeded").length;
+        const failedCount = data.events.length - successCount;
+        $("#logs-summary").innerHTML = [
+          `<span class="chip"><strong>${data.events.length}</strong>&nbsp;eventos · ventana ${data.window_hours}h</span>`,
+          `<span class="chip" data-level="1"><span class="dot"></span>éxitos · ${successCount}</span>`,
+          `<span class="chip" data-level="5"><span class="dot"></span>errores · ${failedCount}</span>`,
+        ].join("");
+
+        if (!data.events.length) {
+          $("#logs-content").innerHTML = `<div class="empty">Sin eventos en la ventana seleccionada. ¡Buena señal!</div>`;
+          setStatus("actualizado " + new Date().toLocaleTimeString("es-ES"));
+          return;
+        }
+
+        const rows = data.events.map((e) => {
+          const status = String(e.status || "").toLowerCase();
+          return `<tr>
+            <td>${escapeHtml(fmtTs(e.start_time))}</td>
+            <td><span class="pill ${escapeHtml(status)}">${escapeHtml(e.status || "—")}</span></td>
+            <td>${escapeHtml(e.function_name || e.job_name || "—")}</td>
+            <td class="num">${e.duration_s === null ? "—" : e.duration_s + "s"}</td>
+            <td>${escapeHtml(e.schedule || "—")}</td>
+            <td style="white-space:normal; max-width:480px;" class="${status === "succeeded" ? "" : "err"}">${escapeHtml(e.message || "")}</td>
+          </tr>`;
+        }).join("");
+
+        $("#logs-content").innerHTML = `
+          <table class="data">
+            <thead><tr>
+              <th>Inicio</th>
+              <th>Estado</th>
+              <th>Función / job</th>
+              <th class="num">Duración</th>
+              <th>Cron</th>
+              <th>Mensaje</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        setStatus("actualizado " + new Date().toLocaleTimeString("es-ES"));
+      }
+
+      $("#logs-hours").addEventListener("change", loadLogs);
+      $("#logs-only").addEventListener("change", loadLogs);
+      $("#logs-limit").addEventListener("change", loadLogs);
+
+      // ---------- Wiring ----------
+      $("#save-token").addEventListener("click", () => {
+        const v = tokenInput.value.trim();
+        if (!v) { toast("Token vacío", true); return; }
+        localStorage.setItem(TOKEN_KEY, v);
+        toast("Token guardado");
+        loadCurrentTab();
+      });
+      $("#refresh").addEventListener("click", loadCurrentTab);
+
+      function escapeHtml(s) {
+        return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+        }[c]));
+      }
+
+      // Auto-load if token already stored
+      if (tokenInput.value) loadCurrentTab();
+
+      // Auto-refresh every 60s
+      setInterval(loadCurrentTab, 60_000);
+    </script>
+  </body>
+</html>
