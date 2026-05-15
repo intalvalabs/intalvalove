@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <title>Dreamlove · Feria Barcelona 2026</title>
+    <link rel="preconnect" href="https://akuxqmlclvtnuetwcwbo.supabase.co" crossorigin />
+    <style>
+      :root {
+        --dl-pink: #db116f;
+        --dl-pink-dark: #b00d5a;
+        --dl-pink-soft: #ffe6f0;
+        --dl-text: #1f1216;
+        --dl-muted: #6b5560;
+        --dl-border: #e9d4de;
+        --dl-error: #c1121f;
+        --dl-radius: 14px;
+        --dl-shadow: 0 10px 30px rgba(219, 17, 111, 0.12);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(160deg, var(--dl-pink-soft) 0%, #fff 60%);
+        color: var(--dl-text);
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 24px 16px 64px;
+      }
+      .card {
+        width: 100%;
+        max-width: 460px;
+        background: #fff;
+        border-radius: var(--dl-radius);
+        box-shadow: var(--dl-shadow);
+        padding: 28px 24px 24px;
+        position: relative;
+      }
+      .lang-toggle {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        display: flex;
+        gap: 4px;
+        background: #fafafa;
+        border: 1px solid var(--dl-border);
+        border-radius: 999px;
+        padding: 3px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .lang-toggle button {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        padding: 4px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+        color: var(--dl-muted);
+        font: inherit;
+      }
+      .lang-toggle button.active {
+        background: var(--dl-pink);
+        color: #fff;
+      }
+      header { text-align: center; margin-bottom: 18px; }
+      header img {
+        height: 64px;
+        max-width: 100%;
+        object-fit: contain;
+      }
+      h1 {
+        font-size: 1.15rem;
+        color: var(--dl-pink);
+        margin: 14px 0 4px;
+      }
+      .subtitle {
+        margin: 0 0 18px;
+        font-size: 0.9rem;
+        color: var(--dl-muted);
+      }
+      form { display: flex; flex-direction: column; gap: 12px; }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--dl-text);
+      }
+      label .req { color: var(--dl-pink); }
+      label .optional {
+        font-weight: 400;
+        color: var(--dl-muted);
+        font-size: 0.78rem;
+        margin-left: 4px;
+      }
+      input[type="text"],
+      input[type="tel"],
+      input[type="email"] {
+        font: inherit;
+        padding: 11px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--dl-border);
+        background: #fff;
+        color: var(--dl-text);
+        transition: border-color 0.15s, box-shadow 0.15s;
+        width: 100%;
+      }
+      input:focus {
+        outline: 0;
+        border-color: var(--dl-pink);
+        box-shadow: 0 0 0 3px rgba(219, 17, 111, 0.18);
+      }
+      .consent {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        font-size: 0.8rem;
+        color: var(--dl-muted);
+        font-weight: 400;
+        line-height: 1.4;
+        margin-top: 4px;
+      }
+      .consent input { margin-top: 2px; accent-color: var(--dl-pink); }
+      .consent a { color: var(--dl-pink); text-decoration: underline; }
+      button[type="submit"] {
+        margin-top: 8px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 13px 16px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--dl-pink);
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.05s;
+      }
+      button[type="submit"]:hover:not(:disabled) { background: var(--dl-pink-dark); }
+      button[type="submit"]:active:not(:disabled) { transform: translateY(1px); }
+      button[type="submit"]:disabled {
+        background: #d9c2cb;
+        cursor: not-allowed;
+      }
+      .error {
+        background: #fdecef;
+        color: var(--dl-error);
+        border: 1px solid #f5c2c7;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        display: none;
+      }
+      .error.visible { display: block; }
+      .thanks {
+        display: none;
+        text-align: center;
+        padding: 12px 4px;
+      }
+      .thanks.visible { display: block; }
+      .thanks .check {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--dl-pink);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 6px auto 14px;
+        font-size: 2rem;
+      }
+      .thanks h2 { color: var(--dl-pink); margin: 0 0 6px; font-size: 1.2rem; }
+      .thanks p { color: var(--dl-muted); margin: 0 0 18px; font-size: 0.95rem; }
+      .thanks .add-another {
+        background: transparent;
+        color: var(--dl-pink);
+        border: 1px solid var(--dl-pink);
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        font: inherit;
+      }
+      footer {
+        margin-top: 18px;
+        text-align: center;
+        font-size: 0.72rem;
+        color: var(--dl-muted);
+      }
+      /* Honeypot — hidden from humans, visible to dumb bots. */
+      .hp {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card" aria-live="polite">
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang="es" class="active">ES</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+
+      <header>
+        <img
+          src="https://lh3.googleusercontent.com/sitesv/AAzXCkcTK0dJynZzpP-XP8txnxlS40ADBepoTqc-OtPD5V4yuzVkq8SQpXM1TGQ8lyb93OTqNM3llilL5B0FJCKUuUfwO4nTKZtZ3hokbS4nHkWpzvFeD5I9hcj37koI_xZ-VaFjWJLS9EE4QzHkkXD1CXUsuN6r1rpFp8-H2cgdpnduC4L91QBscbPyBKM=w16383"
+          alt="Dreamlove"
+        />
+        <h1 data-i18n="title">Déjanos tus datos</h1>
+        <p class="subtitle" data-i18n="subtitle">
+          Feria Barcelona 2026 — te contactaremos en breve.
+        </p>
+      </header>
+
+      <form id="leadForm" novalidate>
+        <div class="error" id="errorBox" role="alert"></div>
+
+        <label>
+          <span><span data-i18n="name">Nombre</span> <span class="req">*</span></span>
+          <input id="name" name="name" type="text" autocomplete="name" required maxlength="200" />
+        </label>
+
+        <label>
+          <span><span data-i18n="phone">Teléfono</span> <span class="req">*</span></span>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="50" />
+        </label>
+
+        <label>
+          <span data-i18n="email">Email <span class="optional" data-i18n="optional">(opcional)</span></span>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="200" />
+        </label>
+
+        <label>
+          <span data-i18n="company">Empresa / cargo <span class="optional" data-i18n="optional">(opcional)</span></span>
+          <input id="company" name="company" type="text" autocomplete="organization" maxlength="200" />
+        </label>
+
+        <label>
+          <span data-i18n="cityCountry">Ciudad / país <span class="optional" data-i18n="optional">(opcional)</span></span>
+          <input id="cityCountry" name="cityCountry" type="text" autocomplete="address-level2" maxlength="200" />
+        </label>
+
+        <!-- Honeypot -->
+        <div class="hp" aria-hidden="true">
+          <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <label class="consent">
+          <input id="gdpr" type="checkbox" required />
+          <span data-i18n="gdpr">
+            He leído y acepto la
+            <a href="https://www.dreamlove.eu/lopd/" target="_blank" rel="noopener noreferrer">política de privacidad</a>
+            y autorizo el tratamiento de mis datos para ser contactado por Dreamlove.
+          </span>
+        </label>
+
+        <button type="submit" id="submitBtn" data-i18n="submit">Enviar</button>
+
+        <footer data-i18n="footer">© Dreamlove International Dreamlove S.A.®</footer>
+      </form>
+
+      <div class="thanks" id="thanks">
+        <div class="check" aria-hidden="true">&#10003;</div>
+        <h2 data-i18n="thanksTitle">¡Gracias!</h2>
+        <p data-i18n="thanksBody">Hemos recibido tus datos. Nos pondremos en contacto contigo muy pronto.</p>
+        <button type="button" class="add-another" id="addAnother" data-i18n="addAnother">Añadir otro contacto</button>
+      </div>
+    </main>
+
+    <script type="module">
+      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+      const SUPABASE_URL = "https://akuxqmlclvtnuetwcwbo.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_5Tcdy-dzxXFMUA-d0x5BZQ_75Q_75IQ";
+      const TABLE = "dreamlove_feria_bcn_2026";
+      const LEAD_TYPE = "feria barcelona 2026";
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      const I18N = {
+        es: {
+          title: "Déjanos tus datos",
+          subtitle: "Feria Barcelona 2026 — te contactaremos en breve.",
+          name: "Nombre",
+          phone: "Teléfono",
+          email: "Email",
+          company: "Empresa / cargo",
+          cityCountry: "Ciudad / país",
+          optional: "(opcional)",
+          gdpr: 'He leído y acepto la <a href="https://www.dreamlove.eu/lopd/" target="_blank" rel="noopener noreferrer">política de privacidad</a> y autorizo el tratamiento de mis datos para ser contactado por Dreamlove.',
+          submit: "Enviar",
+          submitting: "Enviando…",
+          footer: "© Dreamlove International Dreamlove S.A.®",
+          thanksTitle: "¡Gracias!",
+          thanksBody: "Hemos recibido tus datos. Nos pondremos en contacto contigo muy pronto.",
+          addAnother: "Añadir otro contacto",
+          errNameRequired: "Por favor, indica tu nombre.",
+          errPhoneRequired: "Por favor, indica tu teléfono.",
+          errGdprRequired: "Debes aceptar la política de privacidad.",
+          errSubmit: "No hemos podido enviar el formulario. Inténtalo de nuevo.",
+        },
+        en: {
+          title: "Leave us your details",
+          subtitle: "Feria Barcelona 2026 — we'll be in touch shortly.",
+          name: "Name",
+          phone: "Phone",
+          email: "Email",
+          company: "Company / role",
+          cityCountry: "City / country",
+          optional: "(optional)",
+          gdpr: 'I have read and accept the <a href="https://www.dreamlove.eu/lopd/" target="_blank" rel="noopener noreferrer">privacy policy</a> and consent to my data being used so Dreamlove can contact me.',
+          submit: "Send",
+          submitting: "Sending…",
+          footer: "© Dreamlove International Dreamlove S.A.®",
+          thanksTitle: "Thank you!",
+          thanksBody: "We've received your details. We'll be in touch very soon.",
+          addAnother: "Add another contact",
+          errNameRequired: "Please enter your name.",
+          errPhoneRequired: "Please enter your phone number.",
+          errGdprRequired: "You must accept the privacy policy.",
+          errSubmit: "We couldn't submit the form. Please try again.",
+        },
+      };
+
+      let currentLang =
+        (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
+
+      function applyLang(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        const dict = I18N[lang];
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          if (dict[key] === undefined) return;
+          if (key === "gdpr") {
+            el.innerHTML = dict[key];
+          } else {
+            el.textContent = dict[key];
+          }
+        });
+        document.querySelectorAll(".lang-toggle button").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.lang === lang);
+        });
+      }
+
+      document.querySelectorAll(".lang-toggle button").forEach((btn) => {
+        btn.addEventListener("click", () => applyLang(btn.dataset.lang));
+      });
+      applyLang(currentLang);
+
+      const form = document.getElementById("leadForm");
+      const errorBox = document.getElementById("errorBox");
+      const submitBtn = document.getElementById("submitBtn");
+      const thanks = document.getElementById("thanks");
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.add("visible");
+      }
+      function clearError() {
+        errorBox.classList.remove("visible");
+        errorBox.textContent = "";
+      }
+
+      document.getElementById("addAnother").addEventListener("click", () => {
+        thanks.classList.remove("visible");
+        form.style.display = "";
+        form.reset();
+        document.getElementById("name").focus();
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearError();
+        const dict = I18N[currentLang];
+
+        const name = document.getElementById("name").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const company = document.getElementById("company").value.trim();
+        const cityCountry = document.getElementById("cityCountry").value.trim();
+        const gdpr = document.getElementById("gdpr").checked;
+        const honeypot = form.querySelector('input[name="website"]').value;
+
+        if (honeypot) {
+          // Silently pretend success for bots.
+          form.style.display = "none";
+          thanks.classList.add("visible");
+          return;
+        }
+        if (!name) return showError(dict.errNameRequired);
+        if (!phone) return showError(dict.errPhoneRequired);
+        if (!gdpr) return showError(dict.errGdprRequired);
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = dict.submitting;
+
+        const payload = {
+          name,
+          phone,
+          email: email || null,
+          company: company || null,
+          city: cityCountry || null,
+          country: null,
+          lead_type: LEAD_TYPE,
+          gdpr_consent: true,
+          locale: currentLang,
+          user_agent: navigator.userAgent.slice(0, 500),
+          referrer: (document.referrer || "").slice(0, 500),
+        };
+
+        const { error } = await supabase.from(TABLE).insert(payload);
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = dict.submit;
+
+        if (error) {
+          console.error("Supabase insert failed:", error);
+          showError(dict.errSubmit);
+          return;
+        }
+
+        form.style.display = "none";
+        thanks.classList.add("visible");
+      });
+    </script>
+  </body>
+</html>
