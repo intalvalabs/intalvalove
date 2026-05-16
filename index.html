@@ -786,8 +786,8 @@
       // Auto-load if token already stored
       if (tokenInput.value) loadCurrentTab();
 
-      // Auto-refresh every 60s
-      setInterval(loadCurrentTab, 60_000);
+      // Auto-refresh every 30 minutes
+      setInterval(loadCurrentTab, 30 * 60 * 1000);
     </script>
   </body>
 </html>
