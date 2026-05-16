@@ -481,8 +481,9 @@
       // ---------- Health ----------
       async function loadHealth() {
         setStatus("cargando salud…");
-        const [trackingDx, ...results] = await Promise.all([
+        const [trackingDx, gesioSync, ...results] = await Promise.all([
           call({ endpoint: "tracking_diagnostics" }).catch((e) => ({ error: e.message })),
+          call({ endpoint: "gesio_sync_status" }).catch((e) => ({ error: e.message })),
           ...GROUPS.map((g) => call({ endpoint: "health", group: g }).catch((e) => ({ error: e.message, group: g }))),
         ]);
 
@@ -512,8 +513,9 @@
 
         const sections = [];
         sections.push(renderTrackingSection(trackingDx));
+        sections.push(renderGesioSyncSection(gesioSync));
         for (const r of results) {
-          if (r.group === "tracking") continue; // replaced by the diagnostic table above
+          if (r.group === "tracking" || r.group === "dreamlove_sync") continue; // replaced by tables above
           if (r.error) {
             sections.push(`<section class="group-section"><h2>${escapeHtml(r.group)}</h2>
                     <div class="empty err">${escapeHtml(r.error)}</div></section>`);
@@ -528,6 +530,48 @@
         $("#health-content").innerHTML = sections.join("");
 
         setStatus("actualizado " + new Date().toLocaleTimeString("es-ES"));
+      }
+
+      function renderGesioSyncSection(dx) {
+        if (!dx || dx.error) {
+          return `<section class="group-section">
+                    <h2>dreamlove_sync · Gesio ↔ Supabase</h2>
+                    <div class="empty err">${escapeHtml(dx?.error || "sin datos")}</div>
+                  </section>`;
+        }
+        const rows = (dx.entities || []).map((e) => {
+          const lvl = String(e.level);
+          const lagText = e.lag === null ? "—"
+            : e.lag <= 0 ? "al día"
+            : `+${fmtNumber(e.lag)} atrás`;
+          const statusPill = e.last_sync_status
+            ? `<span class="pill ${escapeHtml(String(e.last_sync_status).toLowerCase())}">${escapeHtml(e.last_sync_status)}</span>`
+            : "";
+          const gesioCell = e.gesio_last_id === null
+            ? `<span class="err">${escapeHtml(e.error || "—")}</span>`
+            : fmtNumber(e.gesio_last_id);
+          return `<tr data-level="${lvl}">
+            <td><strong>${escapeHtml(e.entity)}</strong>
+                <div style="font-size:11px;color:var(--muted)">${escapeHtml(e.table)}</div></td>
+            <td class="num">${gesioCell}</td>
+            <td class="num">${fmtNumber(e.supa_last_id)} <span style="color:var(--muted)">(${escapeHtml(lagText)})</span></td>
+            <td>${escapeHtml(fmtTs(e.last_sync_run))} <span style="color:var(--muted)">(${escapeHtml(relativeTime(e.last_sync_run))})</span> ${statusPill}</td>
+            <td><span class="pill" data-status="${escapeHtml(e.status)}">${escapeHtml(e.label)}</span></td>
+          </tr>`;
+        }).join("");
+        return `<section class="group-section">
+                  <h2>dreamlove_sync · Gesio ↔ Supabase</h2>
+                  <table class="data tracking-table">
+                    <thead><tr>
+                      <th>Entidad</th>
+                      <th class="num">Gesio last ID</th>
+                      <th class="num">Supa last ID</th>
+                      <th>Último sync</th>
+                      <th>Diagnóstico</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                </section>`;
       }
 
       function renderTrackingSection(dx) {
