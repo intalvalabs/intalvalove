@@ -244,6 +244,19 @@
       .pill.failed,
       .pill.failure { background: #fee2e2; color: #7f1d1d; }
       .pill.starting { background: #fef9c3; color: #854d0e; }
+      .pill[data-status="fresh"]    { background: #ffffff; color: #1f2937; border: 1px solid var(--border); }
+      .pill[data-status="ok"]       { background: #c8f0c8; color: #14532d; }
+      .pill[data-status="aging"]    { background: #e2f5c4; color: #3f6212; }
+      .pill[data-status="stale"]    { background: #ffe19a; color: #92400e; }
+      .pill[data-status="critical"] { background: #ff9b8a; color: #7f1d1d; }
+      .pill[data-status="dead"]     { background: #d63838; color: #ffffff; }
+
+      table.tracking-table tr[data-level="0"] td { background: rgba(255, 255, 255, 0); }
+      table.tracking-table tr[data-level="1"] td { background: rgba(74, 222, 128, 0.08); }
+      table.tracking-table tr[data-level="2"] td { background: rgba(163, 230, 53, 0.10); }
+      table.tracking-table tr[data-level="3"] td { background: rgba(245, 158, 11, 0.14); }
+      table.tracking-table tr[data-level="4"] td { background: rgba(239, 68, 68, 0.16); }
+      table.tracking-table tr[data-level="5"] td { background: rgba(185, 28, 28, 0.20); }
 
       .empty {
         padding: 24px;
@@ -468,9 +481,10 @@
       // ---------- Health ----------
       async function loadHealth() {
         setStatus("cargando salud…");
-        const results = await Promise.all(
-          GROUPS.map((g) => call({ endpoint: "health", group: g }).catch((e) => ({ error: e.message, group: g })))
-        );
+        const [trackingDx, ...results] = await Promise.all([
+          call({ endpoint: "tracking_diagnostics" }).catch((e) => ({ error: e.message })),
+          ...GROUPS.map((g) => call({ endpoint: "health", group: g }).catch((e) => ({ error: e.message, group: g }))),
+        ]);
 
         const summaryTotals = { fresh: 0, ok: 0, aging: 0, stale: 0, critical: 0, dead: 0, unevaluated: 0 };
         for (const r of results) {
@@ -479,7 +493,7 @@
           }
         }
 
-        const summaryHTML = [
+        const summaryBits = [
           chip("0", "fresh", summaryTotals.fresh),
           chip("1", "ok", summaryTotals.ok),
           chip("2", "aging", summaryTotals.aging),
@@ -487,23 +501,71 @@
           chip("4", "critical", summaryTotals.critical),
           chip("5", "dead", summaryTotals.dead),
           chip("unevaluated", "no evaluado", summaryTotals.unevaluated),
-        ].join("");
-        $("#health-summary").innerHTML = summaryHTML;
+        ];
+        if (!trackingDx?.error && trackingDx?.summary) {
+          summaryBits.unshift(
+            `<span class="chip" data-level="5"><span class="dot"></span>colgados · ${trackingDx.summary.total_stuck}</span>`,
+            `<span class="chip" data-level="1"><span class="dot"></span>en tránsito · ${trackingDx.summary.total_in_transit}</span>`,
+          );
+        }
+        $("#health-summary").innerHTML = summaryBits.join("");
 
-        const sections = results.map((r) => {
+        const sections = [];
+        sections.push(renderTrackingSection(trackingDx));
+        for (const r of results) {
+          if (r.group === "tracking") continue; // replaced by the diagnostic table above
           if (r.error) {
-            return `<section class="group-section"><h2>${escapeHtml(r.group)}</h2>
-                    <div class="empty err">${escapeHtml(r.error)}</div></section>`;
+            sections.push(`<section class="group-section"><h2>${escapeHtml(r.group)}</h2>
+                    <div class="empty err">${escapeHtml(r.error)}</div></section>`);
+            continue;
           }
           const cards = (r.services || []).map(serviceCard).join("");
-          return `<section class="group-section">
+          sections.push(`<section class="group-section">
                     <h2>${escapeHtml(r.group)}</h2>
                     <div class="grid">${cards}</div>
-                  </section>`;
-        }).join("");
-        $("#health-content").innerHTML = sections;
+                  </section>`);
+        }
+        $("#health-content").innerHTML = sections.join("");
 
         setStatus("actualizado " + new Date().toLocaleTimeString("es-ES"));
+      }
+
+      function renderTrackingSection(dx) {
+        if (!dx || dx.error) {
+          return `<section class="group-section">
+                    <h2>tracking carriers</h2>
+                    <div class="empty err">${escapeHtml(dx?.error || "sin datos")}</div>
+                  </section>`;
+        }
+        const rows = (dx.carriers || []).map((c) => {
+          const lvl = String(c.level);
+          const pct = c.pct_stuck === 0 ? "0%" : c.pct_stuck.toFixed(1) + "%";
+          const breakdown = [
+            `${fmtNumber(c.in_transit)} en tránsito`,
+            `${fmtNumber(c.delivered_window)} entregados`,
+            `<strong>${fmtNumber(c.stuck)} colgados</strong>`,
+          ].join(" · ");
+          return `<tr data-level="${lvl}">
+            <td><strong>${escapeHtml(c.carrier)}</strong></td>
+            <td class="num">${fmtNumber(c.completed_window)}</td>
+            <td>${escapeHtml(fmtTs(c.last_tracking_at))} <span style="color:var(--muted)">(${escapeHtml(relativeTime(c.last_tracking_at))})</span></td>
+            <td>${breakdown}</td>
+            <td><span class="pill" data-status="${escapeHtml(c.status)}">${escapeHtml(c.label)} · ${pct}</span></td>
+          </tr>`;
+        }).join("");
+        return `<section class="group-section">
+                  <h2>tracking carriers · ventana ${dx.completed_window_days}d completados / ${dx.stuck_window_days}d sin update = colgado</h2>
+                  <table class="data tracking-table">
+                    <thead><tr>
+                      <th>Nombre</th>
+                      <th class="num">Total (${dx.completed_window_days}d)</th>
+                      <th>Último dato</th>
+                      <th>Estado</th>
+                      <th>Diagnóstico</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                </section>`;
       }
 
       function chip(level, label, count) {
